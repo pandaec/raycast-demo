@@ -2,8 +2,8 @@ window.onload = function(){
 let canvas = document.getElementById("main_canvas");
 let ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
-
 let images = ["assets/player.png","assets/enemy.png"];
+
 let img_loader = new ImageLoader(images,onload);
 
 let background_canvas = document.createElement("canvas");
@@ -31,6 +31,12 @@ let border_lines = [
     {x0:0,y0:canvas.height,x1:canvas.width,y1:canvas.height}
 ];
 
+let stage_corners = [
+    {x:0,y:0},
+    {x:canvas.width,y:0},
+    {x:0,y:canvas.height},
+    {x:canvas.width,y:canvas.height}
+];
 
 function onload(images){
     //draw grid background
@@ -56,6 +62,7 @@ function onload(images){
 function update(){
     player.x = mouse_pos.x - 16;
     player.y = mouse_pos.y - 16;
+    
 }
 
 function draw(e){
@@ -63,92 +70,14 @@ function draw(e){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     ctx.drawImage(background_canvas,0,0);
-
-    ctx.save();
     
     ctx.fillStyle = "lightblue";
     for(let rect of rectangles){
         ctx.fillRect(rect.x,rect.y,rect.width,rect.height);
     }
 
-    let sight_lines = [
-        {x0:player.x+16,y0:player.y+16,x1:0,y1:0},
-        {x0:player.x+16,y0:player.y+16,x1:canvas.width,y1:0},
-        {x0:player.x+16,y0:player.y+16,x1:0,y1:canvas.height},
-        {x0:player.x+16,y0:player.y+16,x1:canvas.width,y1:canvas.height}
-    ];
-    let light_points = [];
 
-    ctx.strokeStyle = "white";
-    for(let rect of rectangles){
-        ctx.beginPath();
-        sight_lines.push({x0:player.x+16,y0:player.y+16,x1:rect.x,y1:rect.y});
-        sight_lines.push({x0:player.x+16,y0:player.y+16,x1:rect.x+rect.width,y1:rect.y});
-        sight_lines.push({x0:player.x+16,y0:player.y+16,x1:rect.x,y1:rect.y+rect.height});
-        sight_lines.push({x0:player.x+16,y0:player.y+16,x1:rect.x+rect.width,y1:rect.y+rect.height});        
-
-        ctx.stroke();
-        ctx.closePath();
-    }
-
-    ctx.strokeStyle = "red";
-    for(let line of rect_lines){
-        ctx.beginPath();
-        ctx.moveTo(line.x0,line.y0);
-        ctx.lineTo(line.x1,line.y1);
-        ctx.stroke();
-        ctx.closePath();
-    }
-    for(let sight of sight_lines){
-        let closest_point = null;
-        let closest_rect_line = null;
-        let closest_dist2 = Number.MAX_SAFE_INTEGER;
-        
-        for(let rline of rect_lines){
-            let intersect = segment_intersection(sight,rline,true);
-            if(intersect){
-                let dist2 = (player.x+16-intersect.x)*(player.x+16-intersect.x) + (player.y+16-intersect.y)*(player.y+16-intersect.y);
-                if(dist2<closest_dist2){
-                    closest_dist2 = dist2;
-                    closest_point = intersect;
-                    closest_rect_line = rline;
-                }
-            }
-        }
-        
-        if(closest_point){
-            //try to connect pointer at corner to nearest border
-            //check if it is at corner
-            //i.e. original position
-            // if(closest_point.x === closest_rect_line.x0 && closest_point.y === closest_rect_line.y0 || closest_point.x === closest_rect_line.x1 && closest_point.y === closest_rect_line.y1){
-            //     let sight = {x0:player.x+16,y0:player.y+16,x1:closest_point.x,y1:closest_point.y};
-            //     //find the closest border to point
-            //     let closest_dist2 = Number.MAX_SAFE_INTEGER;
-            //     let border_point = null;
-            //     for(let border of border_lines){
-            //         let border_intersect = segment_intersection(sight,border,false)
-            //         if(border_intersect){
-            //             let dist2 = (closest_point.x-border_intersect.x)*(closest_point.x-border_intersect.x) + (closest_point.y-border_intersect.y)*(closest_point.y-border_intersect.y);
-            //             if(dist2<closest_dist2){
-            //                 closest_dist2 = dist2;
-            //                 border_point = border_intersect;
-            //             }
-            //         }
-            //     }
-            //     closest_point = border_point;
-            // }
-            light_points.push(closest_point);
-
-            ctx.beginPath();
-            ctx.strokeStyle = "orange";
-            ctx.moveTo(player.x+16,player.y+16);
-            ctx.lineTo(closest_point.x,closest_point.y);
-            ctx.stroke();
-            ctx.closePath();
-            ctx.fillStyle = "black";
-            ctx.fillRect(closest_point.x-3,closest_point.y-3,6,6);
-        }
-    }
+    /*
     let center = {x:player.x+16,y:player.y+16};
     light_points = light_points.sort(
         function(a,b){
@@ -178,7 +107,7 @@ function draw(e){
     }
     ctx.fill();
     ctx.closePath();
-    
+    */
     ctx.drawImage(player.img,player.x,player.y);
 
 
